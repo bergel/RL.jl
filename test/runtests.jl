@@ -97,4 +97,79 @@ State(position=(1, 2), grid=[
         end
     end
 
+    @testset "act" begin
+        @testset "Move to ice cream cell" begin
+            test_grid = [[EMPTY, ICE_CREAM],
+                         [ZOMBIE, CAR]]
+            state = State((2, 2), test_grid)
+            result, _, _ = act(state, UP)
+
+            @test result.position == (1, 2)
+            @test result.grid == [[EMPTY, CAR],
+                                   [ZOMBIE, EMPTY]]
+        end
+
+        @testset "Move to zombie cell" begin
+            test_grid = [[EMPTY, ICE_CREAM],
+                         [ZOMBIE, CAR]]
+            state = State((2, 2), test_grid)
+
+            result, _, _ = act(state, LEFT)
+            @test result.position == (2, 1)
+            @test result.grid == [[EMPTY, ICE_CREAM],
+                                   [CAR, EMPTY]]
+        end
+
+        @testset "Move to ice cream cell" begin
+            test_grid = [[CAR, ICE_CREAM],
+                         [EMPTY, EMPTY]]
+            state = State((1, 1), test_grid)
+
+            result, _, _ = act(state, RIGHT)
+            @test result.position == (1, 2)
+            @test result.grid == [[EMPTY, CAR],
+                                   [EMPTY, EMPTY]]
+        end
+    end
+
+end
+
+@testset "q" begin
+    state = State((1, 1), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
+    context = RLContext(state)
+    @testset "Initialization" begin
+        q_values = RL.q(context, state)
+        @test length(q_values) == length(RL.ACTIONS)
+        @test q_values == zeros(length(RL.ACTIONS))
+    end
+
+    @testset "Action lookup" begin
+        @test RL.q(context, state, RL.UP) == 0.0
+        @test RL.q(context, state, RL.RIGHT) == 0.0
+        @test RL.q(context, state, RL.DOWN) == 0.0
+        @test RL.q(context, state, RL.LEFT) == 0.0
+    end
+end
+
+@testset "choose_action" begin
+    state = State((1, 1), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
+
+    @testset "Epsilon-greedy" begin
+        # Set eps to 1 to always choose a random action
+        context = RLContext(state; eps=1.0)
+        random_actions = [choose_action(context, state) for _ in 1:100]
+        @test all(action -> action in RL.ACTIONS, random_actions)
+
+        context = RLContext(state; eps=0.0)
+        @test choose_action(context, state) == 0
+    end
+end
+
+@testset "train" begin
+    start_state = State((2, 2), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
+    context = RLContext(start_state)
+    train(context, devnull)
+
+    @test q(context, start_state) != zeros(length(RL.ACTIONS))
+    @test argmax(q(context, start_state)) == 1
 end
