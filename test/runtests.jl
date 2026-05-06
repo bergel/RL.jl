@@ -7,14 +7,21 @@ CAR = "c"
 ICE_CREAM = "i"
 EMPTY = "*"
 
+UP = 0
+DOWN = 1
+LEFT = 2
+RIGHT = 3
+
+ACTIONS = [UP, DOWN, LEFT, RIGHT]
+
 grid = [[ICE_CREAM, EMPTY],
         [ZOMBIE, CAR]]
 
 grid2 = [[ICE_CREAM, ZOMBIE],
         [ZOMBIE, CAR]]      
 
-@testset "State" begin
-    state = State((1, 2), grid)
+@testset "CarState" begin
+    state = CarState((1, 2), grid)
 
     @testset "Creation" begin
         @test state.position == (1, 2)
@@ -23,36 +30,36 @@ grid2 = [[ICE_CREAM, ZOMBIE],
 
     @testset "Comparison" begin
         @testset "Equal" begin
-            state2 = State((1, 2), grid)
+            state2 = CarState((1, 2), grid)
             @test state == state2
         end
 
         @testset "Not Equal" begin
-            state3 = State((2, 1), grid)
+            state3 = CarState((2, 1), grid)
             @test state != state3
         end
 
         @testset "Not Equal" begin
-            state3 = State((1, 2), grid2)
+            state3 = CarState((1, 2), grid2)
             @test state != state3
         end        
 
         @testset "Hash" begin
-            state2 = State((1, 2), grid)
+            state2 = CarState((1, 2), grid)
             @test hash(state) == hash(state2)
 
-            state3 = State((2, 1), grid)
+            state3 = CarState((2, 1), grid)
             @test hash(state) != hash(state3)
         end
 
         @testset "Hash" begin
-            state2 = State((1, 2), grid)
+            state2 = CarState((1, 2), grid)
             @test hash(state) == hash(state2)
 
-            state3 = State((2, 1), grid)
+            state3 = CarState((2, 1), grid)
             @test hash(state) != hash(state3)
             
-            state4 = State((1, 2), grid2)
+            state4 = CarState((1, 2), grid2)
             @test hash(state) != hash(state4)
         end        
     end
@@ -62,7 +69,7 @@ grid2 = [[ICE_CREAM, ZOMBIE],
         show(io, state)
         output = String(take!(io))
         @test output == """
-State(position=(1, 2), grid=[
+CarState(position=(1, 2), grid=[
     ["i", "*"],
     ["z", "c"],
 ])
@@ -70,7 +77,7 @@ State(position=(1, 2), grid=[
     end 
 
     @testset "new_car_pos" begin
-        state = State((2, 2), [[EMPTY, EMPTY, EMPTY, EMPTY], 
+        state = CarState((2, 2), [[EMPTY, EMPTY, EMPTY, EMPTY], 
                                 [EMPTY, EMPTY, EMPTY, EMPTY], 
                                 [EMPTY, EMPTY, EMPTY, EMPTY], 
                                 [EMPTY, EMPTY, EMPTY, EMPTY]])
@@ -87,11 +94,11 @@ State(position=(1, 2), grid=[
         end
 
         @testset "Boundary Conditions" begin
-            state = State((1, 1), grid)
+            state = CarState((1, 1), grid)
             @test new_car_pos(state, UP) == (1, 1)
             @test new_car_pos(state, LEFT) == (1, 1)
 
-            state = State((2, 2), grid)
+            state = CarState((2, 2), grid)
             @test new_car_pos(state, DOWN) == (2, 2)
             @test new_car_pos(state, RIGHT) == (2, 2)
         end
@@ -101,7 +108,7 @@ State(position=(1, 2), grid=[
         @testset "Move to ice cream cell" begin
             test_grid = [[EMPTY, ICE_CREAM],
                          [ZOMBIE, CAR]]
-            state = State((2, 2), test_grid)
+            state = CarState((2, 2), test_grid)
             result, _, _ = act(state, UP)
 
             @test result.position == (1, 2)
@@ -112,7 +119,7 @@ State(position=(1, 2), grid=[
         @testset "Move to zombie cell" begin
             test_grid = [[EMPTY, ICE_CREAM],
                          [ZOMBIE, CAR]]
-            state = State((2, 2), test_grid)
+            state = CarState((2, 2), test_grid)
 
             result, _, _ = act(state, LEFT)
             @test result.position == (2, 1)
@@ -123,7 +130,7 @@ State(position=(1, 2), grid=[
         @testset "Move to ice cream cell" begin
             test_grid = [[CAR, ICE_CREAM],
                          [EMPTY, EMPTY]]
-            state = State((1, 1), test_grid)
+            state = CarState((1, 1), test_grid)
 
             result, _, _ = act(state, RIGHT)
             @test result.position == (1, 2)
@@ -135,12 +142,12 @@ State(position=(1, 2), grid=[
 end
 
 @testset "q" begin
-    state = State((1, 1), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
-    context = RLContext(state)
+    state = CarState((1, 1), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
+    context = RLContext(state, 4)
     @testset "Initialization" begin
         q_values = RL.q(context, state)
-        @test length(q_values) == length(RL.ACTIONS)
-        @test q_values == zeros(length(RL.ACTIONS))
+        @test length(q_values) == 4
+        @test q_values == zeros(4)
     end
 
     @testset "Action lookup" begin
@@ -152,24 +159,24 @@ end
 end
 
 @testset "choose_action" begin
-    state = State((1, 1), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
+    state = CarState((1, 1), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
 
     @testset "Epsilon-greedy" begin
         # Set eps to 1 to always choose a random action
-        context = RLContext(state; eps=1.0)
+        context = RLContext(state, 4; eps=1.0)
         random_actions = [choose_action(context, state) for _ in 1:100]
-        @test all(action -> action in RL.ACTIONS, random_actions)
+        @test all(action -> action in 0:3, random_actions)
 
-        context = RLContext(state; eps=0.0)
+        context = RLContext(state, 4; eps=0.0)
         @test choose_action(context, state) == 0
     end
 end
 
 @testset "train" begin
-    start_state = State((2, 2), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
-    context = RLContext(start_state)
+    start_state = CarState((2, 2), [[EMPTY, ICE_CREAM], [ZOMBIE, CAR]])
+    context = RLContext(start_state, 4)
     train(context, devnull)
 
-    @test q(context, start_state) != zeros(length(RL.ACTIONS))
+    @test q(context, start_state) != zeros(4)
     @test argmax(q(context, start_state)) == 1
 end
