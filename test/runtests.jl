@@ -7,10 +7,10 @@ CAR = "c"
 ICE_CREAM = "i"
 EMPTY = "*"
 
-UP = 0
-DOWN = 1
-LEFT = 2
-RIGHT = 3
+UP = 1
+DOWN = 2
+LEFT = 3
+RIGHT = 4
 
 ACTIONS = [UP, DOWN, LEFT, RIGHT]
 
@@ -165,10 +165,10 @@ end
         # Set eps to 1 to always choose a random action
         context = RLContext(state, 4; eps=1.0)
         random_actions = [choose_action(context, state) for _ in 1:100]
-        @test all(action -> action in 0:3, random_actions)
+        @test all(action -> action in 1:4, random_actions)
 
         context = RLContext(state, 4; eps=0.0)
-        @test choose_action(context, state) == 0
+        @test choose_action(context, state) == 1
     end
 end
 
@@ -180,3 +180,5 @@ end
     @test q(context, start_state) != zeros(4)
     @test argmax(q(context, start_state)) == 1
 end
+
+include("tictactoe_tests.jl")
