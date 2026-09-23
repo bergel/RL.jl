@@ -131,9 +131,15 @@ end
 function plot_training(values, window=20)
     moving_avg = [mean(values[i:i+window-1]) for i in 1:length(values)-window+1]
     # plot(values, label="Data", marker=:circle)
-    plot!(window:length(values), moving_avg,
+
+    #zero should be in
+    min_value = minimum(values) > 0 ? 0 : :auto
+    max_value = maximum(values) < 0 ? 0 : :auto
+
+    plot(window:length(values), moving_avg,
       label="$window-point moving average",
-      linewidth=2)
+      linewidth=2,
+      ylims=(min_value, max_value))
 end
 
 ################################################
