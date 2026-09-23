@@ -53,14 +53,14 @@
         io = IOBuffer()
         show(io, board)
         output = String(take!(io))
-        expected_output = "  |   |  \n---------\n  |   |  \n---------\n  |   |  \n"
+        expected_output = "  |   |  \n---------\n  |   |  \n---------\n  |   |  \nCurrent player: X\n"
         @test output == expected_output
 
         board = Board(['X', 'O', ' ', ' ', 'X', 'O', ' ', ' ', ' '], [HumanPlayer(), HumanPlayer()], 'X')
         io = IOBuffer()
         show(io, board)
         output = String(take!(io))
-        expected_output = "X | O |  \n---------\n  | X | O\n---------\n  |   |  \n"
+        expected_output = "X | O |  \n---------\n  | X | O\n---------\n  |   |  \nCurrent player: X\n"
         @test output == expected_output
     end
 
@@ -74,6 +74,6 @@
     @testset "RL Training" begin
         initial_cells = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
         context = RLContext(TTTState(initial_cells, 'X'), 9; max_steps_per_episode = 9, n_episodes=300)
-        train(context)
+        train(context, devnull)
     end
 end

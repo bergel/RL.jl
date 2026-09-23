@@ -164,7 +164,7 @@ function Base.show(io::IO, board::Board)
             println(io, "---------")
         end
     end
-    println("Current player: $(board.current_player_mark)")
+    println(io, "Current player: $(board.current_player_mark)")
 end
 
 ################################################
@@ -189,7 +189,7 @@ function Base.show(io::IO, state::TTTState)
             println(io, "---------")
         end
     end
-    println("Current player: $(state.current_player_mark)")
+    println(io, "Current player: $(state.current_player_mark)")
 end
 
 # Reward = -1 if the move is wrong or if it leads to an opponent win, +10 if the move is correct, 0 if it's a draw
