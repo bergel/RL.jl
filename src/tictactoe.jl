@@ -173,7 +173,7 @@ end
 @struct_hash_equal struct TTTState <: AbstractState
     cells::Vector{Char}
     current_player_mark::Char
-end 
+end
 
 function get_next_move(player::AIPlayer, board::Board)
     state = TTTState(copy(board.cells), board.current_player_mark)
@@ -230,7 +230,7 @@ function act(state::TTTState, action::Int, io::IO=devnull)
         return TTTState(copy(board.cells), board.current_player_mark), -1, true
     elseif is_board_full(board)
         return TTTState(copy(board.cells), board.current_player_mark), 0, true
-    end        
+    end
 
     swap_player(board)
     @assert board.current_player_mark == 'X'
@@ -256,7 +256,7 @@ function eval_context(context::RLContext, nb_tries::Int = 100)
             nb_errors += 1
         end
     end
-    @info "Scores after $n_episodes episodes: Errors: $nb_errors, Draws: $score_0, AI wins: $score_1, Random wins: $score_2, q-table size: $(length(context.q_table))"    
+    @info "Errors: $nb_errors, Draws: $score_0, AI wins: $score_1, Random wins: $score_2, q-table size: $(length(context.q_table))"
 end
 
 # run_game(verbose=true, players=[AIPlayer(context), RandomPlayer()])
@@ -272,9 +272,9 @@ function run_exp_against_random()
     for n_episodes in 0:episode_max_steps:episode_max
         @info "Training with $n_episodes episodes..."
         context = RLContext(
-            TTTState(initial_cells, 'X'), 
-            9; 
-            max_steps_per_episode = 9, 
+            TTTState(initial_cells, 'X'),
+            9;
+            max_steps_per_episode = 9,
             n_episodes=n_episodes)
         train(context, devnull)
 
@@ -293,9 +293,9 @@ end
 #     for n_episodes in 0:episode_max_steps:episode_max
 #         @info "Training with $n_episodes episodes..."
 #         context = RLContext(
-#             TTTState(initial_cells, 'X'), 
-#             9; 
-#             max_steps_per_episode = episode_max_steps, 
+#             TTTState(initial_cells, 'X'),
+#             9;
+#             max_steps_per_episode = episode_max_steps,
 #             n_episodes=n_episodes)
 #         train(context, devnull)
 

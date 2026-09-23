@@ -40,13 +40,14 @@ struct RLContext
 
     function RLContext(
         start_state::AbstractState,
-        actions_count::Int; 
-        min_alpha::Float64=0.02, 
-        max_steps_per_episode::Int=20, 
-        n_episodes::Int = 80, 
-        gamma::Float64=1.0, 
+        actions_count::Int
+        ;
+        min_alpha::Float64=0.02,
+        max_steps_per_episode::Int=20,
+        n_episodes::Int = 80,
+        gamma::Float64=1.0,
         eps::Float64=0.1,
-        seed::Int = 42
+        seed::Int = 42,
     )
         q_table = Dict{AbstractState, Vector{Float64}}()
         alphas = collect(range(1.0, stop=min_alpha, length=n_episodes))
@@ -54,10 +55,10 @@ struct RLContext
             start_state,
             actions_count,
             q_table,
-            alphas, 
-            gamma, 
-            eps, 
-            
+            alphas,
+            gamma,
+            eps,
+
             n_episodes,
             max_steps_per_episode,
             seed
@@ -107,7 +108,7 @@ end
 
 
 ################################################
-# CAR 
+# CAR
 ZOMBIE = "z"
 CAR = "c"
 ICE_CREAM = "i"
@@ -186,7 +187,7 @@ end
 
 # In practice, We have only one state since the number of arms is fixed, but we can still
 # use the same structure for consistency with the rest of the code.
-struct MABState <: AbstractState 
+struct MABState <: AbstractState
     arms_count::Int
     MABState(arms_count::Int=3) = new(arms_count)
 end
@@ -206,7 +207,7 @@ end
 
 @struct_hash_equal struct NGGState <: AbstractState
     current_guess::Int
-end 
+end
 
 function act(state::NGGState, action::Int, io::IO=devnull)
     target = 7
@@ -234,7 +235,7 @@ include("tictactoe.jl")
 #     rooms_left::Int,
 #     season::String,
 #     competitor_price_bucket::String
-# end 
+# end
 
 # function act(state::DPSHState, action::Int, io::IO=devnull)
 #     room_price[80, 100, 120, 140, 160][action]  # Map action to a price
