@@ -78,9 +78,13 @@ function q(context::RLContext, state::AbstractState, action::Union{Int, Nothing}
     end
 end
 
-function choose_action(context::RLContext, state::AbstractState)
-    rand() < context.eps && return rand(1:context.actions_count)
+function pick_best_action(context::RLContext, state)
     return argmax(q(context, state))
+end
+
+function choose_action(context::RLContext, state)
+    rand() < context.eps && return rand(1:context.actions_count)
+    return pick_best_action(context, state)
 end
 
 function train(context::RLContext, io::IO=stdout)
@@ -222,10 +226,9 @@ function act(state::NGGState, action::Int, io::IO=devnull)
 end
 
 ################################################
-# TIC TAC TOE
 
 include("tictactoe.jl")
-
+include("map_crawler.jl")
 
 ################################################
 # Dynamic Pricing for a Small Hotel
