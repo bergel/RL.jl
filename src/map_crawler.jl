@@ -1,6 +1,6 @@
 #=
-rl_context = RLContext(MapCrawlerState(), 4; max_steps_per_episode = 20, n_episodes=500)
-train(rl_context)
+rl_context = RLContext(MapCrawlerState(), 10; max_steps_per_episode = 20, n_episodes=500)
+training = train(rl_context);
 
 result = []
 reward = 0
@@ -21,6 +21,10 @@ export MapCrawlerState
     y::Int64
     MapCrawlerState(x, y) = new(x, y)
     MapCrawlerState() = MapCrawlerState(0, 0)
+end
+
+function available_actions(context::RLContext, ::MapCrawlerState)
+    return 1:4
 end
 
 function act(state::MapCrawlerState, action::Int, io::IO=devnull)

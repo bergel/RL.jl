@@ -1,10 +1,12 @@
 module RL
 
 using Random, StructEquality
+using Plots, Statistics
 
 export CarState, new_car_pos, act
 export q, choose_action, train
 export RLContext, NGGState
+export plot_training
 
 abstract type AbstractState end
 
@@ -68,7 +70,16 @@ end
 
 function q(context::RLContext, state::AbstractState, action::Union{Int, Nothing}=nothing)
     if !(haskey(context.q_table, state))
-        context.q_table[state] = zeros(context.actions_count)
+        tab = zeros(context.actions_count)
+        aa = available_actions(context, state)
+        for a in 1:context.actions_count
+            if a in aa
+                tab[a] = 0
+            else
+                tab[a] = -100000
+            end
+        end
+        context.q_table[state] = tab
     end
 
     if action === nothing
@@ -82,14 +93,19 @@ function pick_best_action(context::RLContext, state)
     return argmax(q(context, state))
 end
 
+function available_actions(context::RLContext, state)
+    return 1:context.actions_count
+end
+
 function choose_action(context::RLContext, state)
-    rand() < context.eps && return rand(1:context.actions_count)
+    rand() < context.eps && return rand(available_actions(context, state))
     return pick_best_action(context, state)
 end
 
 function train(context::RLContext, io::IO=stdout)
     Random.seed!(context.seed)
 
+    result = []
     for episode in 1:context.n_episodes
         state = context.start_state
         total_reward = 0
@@ -107,9 +123,18 @@ function train(context::RLContext, io::IO=stdout)
             is_done && break
         end
         println(io, "Episode $episode: Total Reward = $total_reward")
+        push!(result, total_reward)
     end
+    return result
 end
 
+function plot_training(values, window=20)
+    moving_avg = [mean(values[i:i+window-1]) for i in 1:length(values)-window+1]
+    # plot(values, label="Data", marker=:circle)
+    plot!(window:length(values), moving_avg,
+      label="$window-point moving average",
+      linewidth=2)
+end
 
 ################################################
 # CAR
